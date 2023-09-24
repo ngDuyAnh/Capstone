@@ -250,7 +250,7 @@ public class RubikCube
         PerformRotationRow(sideView, top, bottom, row);
     }
 
-    public void RotateColumnDown(CubeFace face, int col)
+    public void RotateColumnDown(Face face, int col)
     {
         // Set the view parameter
         // This is to generalize the algorithmn
@@ -308,23 +308,20 @@ public class RubikCube
         }
 
         // Rotate will be to the right
-        // Keep a copy of the current face
-        // The left face replace the current face
-        // The current face become the left face
         List<Square> tempRow = faceList[horizontalView[horizontalView.Count - 1]].GetRow(row);
         for (int counter = 0; counter < horizontalView.Count; ++counter) 
         {
             // Get the current face of operation
             Face currentFace = horizontalView[counter];
             
-            // The left face
-            List<Square> leftFaceRow = tempRow;
+            // Replace the current face to this
+            List<Square> replaceSource = tempRow;
 
-            // Save a copy of the current
+            // Save a copy of the current before the replacing
             tempRow = faceList[currentFace].GetRow(row);
 
-            // Make the changes to the current face
-            faceList[currentFace].SetRow(leftFaceRow, row);
+            // Perform the replacement
+            faceList[currentFace].SetRow(replaceSource, row);
         }
     }
 
@@ -346,24 +343,29 @@ public class RubikCube
             faceList[right].RotateCounterClockwise();
         }
 
-        // Rotate will be to the right
-        // Keep a copy of the current face
-        // The top face replace the current face
-        // The current face become the left face
+        // Rotate will be top to bottom
         List<Square> tempCol = faceList[verticalView[verticalView.Count - 1]].GetCol(col);
         for (int counter = 0; counter < verticalView.Count; ++counter)
         {
             // Get the current face of operation
             Face currentFace = verticalView[counter];
 
-            // The left face
-            List<Square> topFaceCol = tempCol;
+            // Replace the current face to this
+            List<Square> replaceSource = tempCol;
 
-            // Save a copy of the current
+            // Save a copy of the current before the replacing
             tempCol = faceList[currentFace].GetCol(col);
 
-            // Make the changes to the current face
-            faceList[currentFace].SetCol(topFaceCol, col);
+            // If the current face is the back
+            // Because of the direction of rotation
+            // We will need to insert it the revert order
+            if (currentFace == Face.Back)
+            {
+                replaceSource.Reverse();
+            }
+
+            // Perform the replacement
+            faceList[currentFace].SetCol(replaceSource, col);
         }
     }
 }
