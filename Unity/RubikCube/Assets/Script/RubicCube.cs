@@ -205,30 +205,41 @@ public class RubikCube
         // The view is either top or bottom, then we have to change the view accordingly
         if (face == Face.Top || face == Face.Bottom)
         {
-            sideView = new List<Face> { Face.Top, Face.Right, Face.Bottom, Face.Left };
+            /*horizontalView = new List<Face> { Face.Top, Face.Right, Face.Bottom, Face.Left };
             top = Face.Back;
             bottom = Face.Front;
 
             // Rotate to use the row indexing
             faceList[Face.Right].RotateCounterClockwise();
-            faceList[Face.Left].
-
+            //faceList[Face.Left]
 
             // The front will have to be the right following the standard of left to right, top to bottom
             Reorient(Face.Right);
 
-            /*horizontalView = new List<CubeFace> { CubeFace.Top, CubeFace.Right, CubeFace.Bottom, CubeFace.Left };
+            *//*horizontalView = new List<CubeFace> { CubeFace.Top, CubeFace.Right, CubeFace.Bottom, CubeFace.Left };
             top = CubeFace.Back;
-            bottom = CubeFace.Front;*/
+            bottom = CubeFace.Front;*//*
 
             // Perform the rotation of up to down with respect to the new orientation
 
             // Change the orientation back to default
+            Reorient(Face.Front);*/
+
+            // Change the orientation of the right side to be the front
+            // This will allow us to take advantage and resuse the column operation
+            Reorient(Face.Right);
+
+            // Perform the rotation
+            RotateColumnDown
+
+            // Change the cube back to the default orientation
             Reorient(Face.Front);
         }
-
         // Perform the rotation across
-        PerformRotationRow(sideView, top, bottom, row);
+        else
+        {
+            PerformRotationRow(sideView, top, bottom, row);
+        }
     }
 
     public void RotateRowLeft(Face face, int row)
@@ -252,21 +263,19 @@ public class RubikCube
 
     public void RotateColumnDown(Face face, int col)
     {
-        // Set the view parameter
-        // This is to generalize the algorithmn
-        List<Face> sideView = new List<Face> { Face.Front, Face.Bottom, Face.Back, Face.Top };
-        Face top = Face.Right, bottom = Face.Left;
-
         // The view is either top or bottom, then we have to change the view accordingly
         if (face == CubeFace.Right || face == CubeFace.Left)
         {
-            sideView = new List<CubeFace> { CubeFace.Right, CubeFace.Bottom, CubeFace.Left, CubeFace.Top };
+            /*horizontalView = new List<CubeFace> { CubeFace.Right, CubeFace.Bottom, CubeFace.Left, CubeFace.Top };
             top = CubeFace.Front;
-            bottom = CubeFace.Back;
+            bottom = CubeFace.Back;*/
         }
-
-        // Perform the rotation across
-        PerformRotationRow(sideView, top, bottom, col);
+        // Perform the rotation top to bottom
+        else
+        {
+            List<Face> sideView = new List<Face> { Face.Front, Face.Bottom, Face.Back, Face.Top };
+            PerformRotationRow(sideView, Face.Left, Face.Right, col);
+        }
     }
 
     // Private method
@@ -274,8 +283,6 @@ public class RubikCube
     private void Reorient(Face targetFrontFace)
     {
         // Keep rotate to the whole rubik cube until the front is the given face
-        List<Face> sideView = new List<Face> { Face.Front, Face.Right, Face.Back, Face.Left };
-        Face top = Face.Top, bottom = Face.Bottom;
         for (int counter = 0; (Face)(((int)currentFrontFace + counter) % 4) != targetFrontFace; counter++)
         {
             // Reorient the cube
@@ -289,13 +296,11 @@ public class RubikCube
         }
     }
 
-    private void PerformRotationRow(List<Face> horizontalView, Face top, Face bottom, int row)
+    private void PerformRotationRow(int row)
     {
-        /*
-        Generalize the rotation will be from the left to right
-        */
-        Debug.Assert(horizontalView.Count == 4, "Default implementation is 4 faces for side.");
-        Debug.Assert(row < horizontalView.Count, "The index must be within bound.");
+        // Local variable dictionary
+        List<Face> horizontalView = new List<Face> { Face.Front, Face.Right, Face.Back, Face.Left };
+        Face top = Face.Top, bottom = Face.Bottom;
 
         // Perform the rotation of the top or bottom
         if (row == 0)
@@ -327,6 +332,10 @@ public class RubikCube
 
     private void PerformRotationCol(List<Face> verticalView, Face left, Face right, int col)
     {
+        // Local variable dictionary
+        List<Face> sideView = new List<Face> { Face.Top, Face.Front, Face.Bottom, Face.Back };
+        Face top = Face.Top, bottom = Face.Bottom;
+
         /*
         Generalize the rotation will be from the top to bottom
         */
@@ -348,6 +357,7 @@ public class RubikCube
         for (int counter = 0; counter < verticalView.Count; ++counter)
         {
             // Get the current face of operation
+            int changeCol = col;
             Face currentFace = verticalView[counter];
 
             // Replace the current face to this
@@ -361,11 +371,12 @@ public class RubikCube
             // We will need to insert it the revert order
             if (currentFace == Face.Back)
             {
+                changeCol = (faceList[Face.Front].GetSize() - 1) - col;
                 replaceSource.Reverse();
             }
 
             // Perform the replacement
-            faceList[currentFace].SetCol(replaceSource, col);
+            faceList[currentFace].SetCol(replaceSource, changeCol);
         }
     }
 }
